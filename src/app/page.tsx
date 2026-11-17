@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+import { connection } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { DailyQT } from '@/types/qt';
 import MeditationNote from '@/components/MeditationNote';
@@ -13,7 +15,7 @@ import {
   Calendar,
 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const instant = false;
 
 function getTodayDateString() {
   return new Intl.DateTimeFormat('en-CA', {
@@ -30,11 +32,12 @@ function shiftDate(dateStr: string, days: number) {
   return date.toISOString().split('T')[0];
 }
 
-export default async function QTPage({
+async function QTContent({
   searchParams,
 }: {
   searchParams: Promise<{ date?: string }>;
 }) {
+  await connection();
   const params = await searchParams;
   const todayStr = getTodayDateString();
   const targetDate = params.date && params.date <= todayStr ? params.date : todayStr;
@@ -181,5 +184,23 @@ export default async function QTPage({
         )}
       </main>
     </div>
+  );
+}
+
+export default function QTPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center text-sm text-slate-500">
+          오늘의 묵상을 불러오는 중...
+        </div>
+      }
+    >
+      <QTContent searchParams={searchParams} />
+    </Suspense>
   );
 }
