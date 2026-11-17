@@ -199,8 +199,3 @@ export default function QTPage({
           오늘의 묵상을 불러오는 중...
         </div>
       }
-    >
-      <QTContent searchParams={searchParams} />
-    </Suspense>
-  );
-}
